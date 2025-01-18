@@ -201,105 +201,92 @@ def predictText():
         return Response("Value not found inside  json data")
 
 @app.route('/video_feed')
-@cross_origin()  # Specific CORS for this route
+@cross_origin()
 def video_feed():
-    cap = cv2.VideoCapture(0)  # Assuming you want to use the webcam
+    cap = cv2.VideoCapture(0)
     crop_cascade = cv2.CascadeClassifier('model/haarcascade_russian_plate_number.xml')
     plate_captured = False
     stable_start_time = None
-    save_dir = "plates"  # Set your path to save images
+    save_dir = "plates"
     reg_data = {}
     crop_path = ""
+
     def generate():
         nonlocal plate_captured, stable_start_time
+        try:
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
 
-        while True:
-            ret, frame = cap.read()
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                crops = crop_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-            if not ret:
-                break
+                if len(crops) > 0 and not plate_captured:
+                    (x, y, w, h) = crops[0]
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            crops = crop_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+                    if stable_start_time is None:
+                        stable_start_time = time.time()
+                    elif time.time() - stable_start_time >= 5:
+                        crop_img = frame[y:y + h, x:x + w]
+                        crop_path = os.path.join("plates", "detected_plate.jpg")
+                        cv2.imwrite(crop_path, crop_img)
 
-            # License plate detection logic
-            if len(crops) > 0 and not plate_captured:
-                (x, y, w, h) = crops[0]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        plate_captured = True
 
-                if stable_start_time is None:
-                    stable_start_time = time.time()
-                elif time.time() - stable_start_time >= 5:
-                    crop_img = frame[y:y + h, x:x + w]
-                    crop_path = os.path.join(save_dir, "detected_plate.jpg")
-                    cv2.imwrite(crop_path, crop_img)
+                        # Process the cropped image
+                        cropped_image = Image.open(crop_path).resize((720, 360))
+                        cropped_image = ImageEnhance.Sharpness(cropped_image).enhance(2.0)
+                        cropped_image = ImageEnhance.Contrast(cropped_image).enhance(1.5)
 
-                    plate_captured = True
+                        print("Extracting text")
+                        text = ocr_detection().extracting_text(cropped_image)
+                        print(text)
 
-                    # Process the cropped image
-                    cropped_image = Image.open(crop_path)
-                    cropped_image = cropped_image.resize((720, 360))
-                    enhancer = ImageEnhance.Sharpness(cropped_image)
-                    cropped_image = enhancer.enhance(2.0)
-                    enhancer = ImageEnhance.Contrast(cropped_image)
-                    cropped_image = enhancer.enhance(1.5)
-
-                    print("Extracting text")
-                    text = ocr_detection().extracting_text(cropped_image)
-                    print(text)
-
-                    license_plate = text
-                    dbS = ANPD_DB("ANPD", "anpr_data")
-                    print("Getting data")
-                    vechile_data = dbS.get_vehicle_by_registration_number(license_plate)
-                    print(vechile_data)
-
-                    if vechile_data:
-                        reg_data = json.loads(json_util.dumps(vechile_data))
-
-                        # Create the response JSON object for the detection data
-                        response = {
-                            "type": "detection",
-                            "processed_image": encodeImageIntoBase64(crop_path).decode('utf-8'),
-                            "reg_data": reg_data
-                        }
-
-                    else:
-                        print("Fetching from API")
-                        res_data = Api_req().fetchApi(license_plate)
-                        with open('data.json', 'w') as json_file:
-                            json.dump(res_data, json_file, indent=4)
-
-                        dbS.insert_data("data.json")
-                        os.remove("data.json")
-
+                        license_plate = text
+                        dbS = ANPD_DB("ANPD", "anpr_data")
+                        print("Getting data")
                         vechile_data = dbS.get_vehicle_by_registration_number(license_plate)
-                        reg_data = json.loads(json_util.dumps(vechile_data))
+                        print(vechile_data)
 
-                        # Create the response JSON object for the detection data
+                        if vechile_data:
+                            reg_data = json.loads(json_util.dumps(vechile_data))
+                        else:
+                            print("Fetching from API")
+                            res_data = Api_req().fetchApi(license_plate)
+                            with open('data.json', 'w') as json_file:
+                                json.dump(res_data, json_file, indent=4)
+                            dbS.insert_data("data.json")
+                            os.remove("data.json")
+                            vechile_data = dbS.get_vehicle_by_registration_number(license_plate)
+                            reg_data = json.loads(json_util.dumps(vechile_data))
+
                         response = {
                             "type": "detection",
                             "processed_image": encodeImageIntoBase64(crop_path).decode('utf-8'),
                             "reg_data": reg_data
                         }
 
-                    yield f"data: {json.dumps(response)}\n\n"
+                        yield f"data: {json.dumps(response)}\n\n"
 
-                    # Reset for the next detection
-                    plate_captured = False
-                    stable_start_time = None
-                    os.remove(crop_path)  # Delete the cropped image after processing
+                        plate_captured = False
+                        stable_start_time = None
+                        if os.path.exists(crop_path):
+                            os.remove(crop_path)
 
-            # Send video frame as base64-encoded JPEG image
-            _, buffer = cv2.imencode('.jpg', frame)
-            frame_bytes = buffer.tobytes()
-            frame_base64 = base64.b64encode(frame_bytes).decode('utf-8')
-
-            # Send the video frame as part of the event stream
-            yield f"data: {{\"type\": \"video\", \"image\": \"{frame_base64}\"}}\n\n"
+                _, buffer = cv2.imencode('.jpg', frame)
+                frame_base64 = base64.b64encode(buffer).decode('utf-8')
+                yield f"data: {{\"type\": \"video\", \"image\": \"{frame_base64}\"}}\n\n"
+                time.sleep(0.1)  # Control streaming speed
+        except GeneratorExit:
+            print("Stream closed.")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            cap.release()
 
     return Response(generate(), mimetype='text/event-stream')
-
 
      
 if __name__ == "__main__":
