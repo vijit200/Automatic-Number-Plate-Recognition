@@ -201,7 +201,7 @@ def predictText():
         return Response("Value not found inside  json data")
 
 @app.route('/video_feed')
-@cross_origin(origin="http://localhost:5173", support_credentials=True)  # Specific CORS for this route
+@cross_origin()  # Specific CORS for this route
 def video_feed():
     cap = cv2.VideoCapture(0)  # Assuming you want to use the webcam
     crop_cascade = cv2.CascadeClassifier('model/haarcascade_russian_plate_number.xml')
