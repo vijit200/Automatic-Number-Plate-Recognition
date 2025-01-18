@@ -207,9 +207,8 @@ def video_feed():
     crop_cascade = cv2.CascadeClassifier('model/haarcascade_russian_plate_number.xml')
     plate_captured = False
     stable_start_time = None
-    save_dir = "plates"
-    reg_data = {}
-    crop_path = ""
+    if not os.path.exists('plates'):
+        os.makedirs('plates')
 
     def generate():
         nonlocal plate_captured, stable_start_time
