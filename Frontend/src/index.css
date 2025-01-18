@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Handjet:wght@300&family=Lisu+Bosa:ital@1&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satisfy&display=swap'); /*new font for title*/
+@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&family=PT+Mono&family=Yatra+One&display=swap'); /*new font overpass*/
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  font-family: "Lato", "Overpass", "Poppins", sans-serif;
+  color-scheme: dark;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.title{
+  font-family: "Alegreya", "Satisfy", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.light{
+  color-scheme: light;
+  background-image: url(https://chatllm.abacus.ai/static/imgs/teams/backllm3.webp), radial-gradient(circle, rgba(238,174,202,1) 50%, rgba(148,187,233,1) 100%);
+  background-size: cover;
+}
+
+.dark {
+  color-scheme: dark;
+  /* background-image: url(https://chatllm.abacus.ai/static/imgs/teams/backllm3.webp), linear-gradient(183deg, rgb(0, 9, 18) 100%, rgb(0, 15, 34) 46%, rgb(0, 5, 10) 1%, rgb(0, 0, 0) 0%);
+  background-size: cover; */
+}
+
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
