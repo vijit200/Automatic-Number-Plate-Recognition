@@ -179,4 +179,3 @@ train/
 *.jpg
 *.png
 data/*.jpg
-*.json
