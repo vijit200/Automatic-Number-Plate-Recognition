@@ -12,21 +12,55 @@ function SearchCam() {
   const [isDetecting, setIsDetecting] = useState(false);
   const eventSourceRef = useRef(null);
 
+  // code for the theme toggle button
+         // Check for the saved theme in localStorage or default to dark mode
+         const storedTheme = localStorage.getItem('theme');
+         // console.log(storedTheme);
+         const [isDarkMode, setIsDarkMode] = useState(storedTheme ? storedTheme === 'dark' : true);
+         const toggleMode = () => {
+             const newMode = !isDarkMode; // toggle the mode
+             setIsDarkMode(newMode);
+     
+             // Save the selected mode in localStorage
+             localStorage.setItem('theme', newMode ? 'dark' : 'light');
+         };
+     
+         // Apply dark/light mode to the document body on mount and when the mode changes
+         useEffect(() => {
+             const button = document.getElementById('togglemode');
+     
+             if (isDarkMode) {
+                 document.documentElement.classList.add('dark');
+                 document.documentElement.classList.remove('light');
+                 button.innerHTML = '&#x1f319;';
+                 // document.documentElement.querySelector('p').style.color = '';
+     
+             } else {
+                 document.documentElement.classList.add('light');
+                 document.documentElement.classList.remove('dark');
+                 button.innerHTML = '&#x2600;';
+                 // document.documentElement.querySelector('p').style.color = 'black';
+             }
+         }, [isDarkMode]);
+
+  // Live detection code
   const startLiveDetection = () => {
     if (!isDetecting) {
       setIsDetecting(true);
       
       // Start video feed and detection feed from the backend
+      // Used eventsource instead of Axios to fetch data through live camera contunuously instead of just once
       const eventSource = new EventSource("http://127.0.0.1:8000/video_feed");
-
       eventSource.onmessage = (event) => {
         try {
           const response = JSON.parse(event.data);
 
           if (response.type === "video") {
-            // Set the live video feed as base64 image
-            const img = `data:image/jpeg;base64,${response.image}`;
-            document.getElementById("liveFeed").src = img;
+            const liveFeed = document.getElementById("liveFeed");
+            if (liveFeed) {
+              const img = `data:image/jpeg;base64,${response.image}`;
+              liveFeed.src = img;
+            }
           } else if (response.type === "detection") {
             // Handle detection data
             if (response.reg_data) {
@@ -81,10 +115,14 @@ function SearchCam() {
 
   return (
     <div>
+      {/* Navbar code */}
       <div className="flex justify-around items-center">
         <NavLink to="/">
           <img src={logo} alt="logo" className="lg:w-16 w-12" />
         </NavLink>
+        {/* Button to switch between dark and light modes */}
+        <button onClick={toggleMode} id="togglemode" className="ml-10 w-10 rounded-2xl border-2 border-black bg-white p-1 font-semibold uppercase text-black transition-all duration-300 hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[4px_4px_0px_black] active:translate-x-[0px] active:translate-y-[0px] active:rounded-2xl active:shadow-none">
+        </button>
         <h1 className="font-bold bg-gradient-to-r from-orange-500 to-red-800 text-transparent bg-clip-text lg:text-4xl md:text-2xl">
           AI License Plate Detection
         </h1>
@@ -92,7 +130,9 @@ function SearchCam() {
         {userLoggedIn && <h1 className="text-red-500 lg:text-2xl">{currentUser.email}</h1>}
       </div>
 
-      <div className="relative mt-10 min-h-[600px]">
+      {/* Code to show the fetched data */}
+      {data && (
+      <div id="showData" className="relative mt-10 min-h-[600px]">
         <div className="min-h-[30rem] lg:w-[77rem] border rounded-md shadow-md overflow-auto flex flex-col items-center">
           <p className="text-sm m-2 text-center">
             Detect license plates in real-time with AI and YOLO integration.
@@ -112,8 +152,7 @@ function SearchCam() {
               <img src={processedImage} alt="Detected Plate" className="w-48 h-auto" />
             </div>
           )}
-
-          {data && (
+          
             <ul className="m-5 p-5 border rounded-xl bg-gray-800 text-white">
               <li><strong>Owner Name:</strong> {data.owner_name}</li>
               <li><strong>Fuel Type:</strong> {data.fuel_type}</li>
@@ -122,15 +161,19 @@ function SearchCam() {
               <li><strong>Registration Authority:</strong> {data.registration_authority}</li>
               <li><strong>Registration Date:</strong> {data.registration_date}</li>
             </ul>
-          )}
         </div>
-
-        <div className="mt-5 flex justify-center">
+      </div>)}
+      
+      {/* Live camera feed area */}
+      {data ? null : 
+      <div id="showCam">
+        <div className="mt-10 flex justify-center">
           <img
+            src="https://clipart-library.com/2023/photo-camera-clipart-xl.png"
             id="liveFeed"
             alt="Live Camera Feed"
             className="border-4 border-orange-500 rounded-lg"
-            style={{ width: "720px", height: "480px" }}
+            style={{ width: "700px", height: "400px" }}
           />
         </div>
 
@@ -151,7 +194,7 @@ function SearchCam() {
             </button>
           )}
         </div>
-      </div>
+        </div>}
     </div>
   );
 }

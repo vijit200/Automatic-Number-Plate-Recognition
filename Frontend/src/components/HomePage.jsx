@@ -12,7 +12,7 @@ const {isAuthenticated} = useAuth0();
 const {userLoggedIn} = useAuth();
 
   return (
-    <div id="home" className="flex flex-col items-center border-b border-neutral-800 mt-12 lg:mt-20">
+    <div id="home" className="flex flex-col items-center border-b border-neutral-800 mt-16 lg:mt-20">
         <h1 className="title text-4xl sm:text-6xl lg:text-8xl text-center tracking-wide">
             Automatic Number <span className="bg-gradient-to-r from-orange-700 to-red-800 text-transparent bg-clip-text">Plate Recognition</span>
         </h1>

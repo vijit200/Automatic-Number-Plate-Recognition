@@ -6,8 +6,8 @@ const Footer = () => {
     <div id='footer' className="relative border-b border-neutral-800 bg-neutral-800 bg-opacity-20 backdrop-blur-lg rounded-md min-h-[400px]">
     <div className="grid lg:grid-cols-3 place-items-center">
         <div className='text-center w-fit ml-5 mt-4 lg:mt-0'>
-            <img src={image} alt="logo" className='w-28 h-16 rounded-md ml-6'></img>
-            <h1 className='my-5 text-lg bg-gradient-to-r from-red-500 to-red-800 text-transparent bg-clip-text font-bold max-w-4xl'>Automatic Number <br/> Plate Recognition</h1>
+            <img src={image} alt="logo" className='w-32 h-28 ml-5'></img>
+            <h1 className='text-lg bg-gradient-to-r from-red-500 to-red-800 text-transparent bg-clip-text font-bold max-w-4xl'>Automatic Number <br/> Plate Recognition</h1>
             <p></p>
             <div className='flex m-5 gap-7'>
             <Facebook />

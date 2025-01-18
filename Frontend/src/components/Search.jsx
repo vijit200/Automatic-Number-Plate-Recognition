@@ -127,7 +127,7 @@ export default Search;
 
 //Search by uploading license plate image
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logo from '../assets/image.png';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -199,6 +199,38 @@ function Search() {
     };
 
 
+    // code for the theme toggle button
+         // Check for the saved theme in localStorage or default to dark mode
+        const storedTheme = localStorage.getItem('theme');
+        // console.log(storedTheme);
+        const [isDarkMode, setIsDarkMode] = useState(storedTheme ? storedTheme === 'dark' : true);
+        const toggleMode = () => {
+            const newMode = !isDarkMode; // toggle the mode
+            setIsDarkMode(newMode);
+    
+            // Save the selected mode in localStorage
+            localStorage.setItem('theme', newMode ? 'dark' : 'light');
+        };
+    
+        // Apply dark/light mode to the document body on mount and when the mode changes
+        useEffect(() => {
+            const button = document.getElementById('togglemode');
+    
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+                button.innerHTML = '&#x1f319;';
+                // document.documentElement.querySelector('p').style.color = '';
+    
+            } else {
+                document.documentElement.classList.add('light');
+                document.documentElement.classList.remove('dark');
+                button.innerHTML = '&#x2600;';
+                // document.documentElement.querySelector('p').style.color = 'black';
+            }
+        }, [isDarkMode]);
+
+
     const {user} = useAuth0(); // Auth0
     const {currentUser} = useAuth(); // Firebase
     const {isAuthenticated} = useAuth0();
@@ -210,6 +242,9 @@ function Search() {
                         <div className="flex justify-around items-center">
                           <div className="flex items-center flex-shrink-0">
                             <NavLink to = "/"><img src={logo}  alt="logo" className="w-16"></img></NavLink>
+                            {/* Button to switch between dark and light modes */}
+                            <button onClick={toggleMode} id="togglemode" className="ml-10 w-10 rounded-2xl border-2 border-black bg-white p-1 font-semibold uppercase text-black transition-all duration-300 hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[4px_4px_0px_black] active:translate-x-[0px] active:translate-y-[0px] active:rounded-2xl active:shadow-none">
+                            </button>
                           </div>
                           <h1 className='font-bold bg-gradient-to-r from-orange-500 to-red-800 text-transparent bg-clip-text lg:text-4xl md:text-3xl'>Detect with AI & YOLO</h1>
                           {isAuthenticated && <h1 className='text-red-500 tracking-widest text-2xl'>{user.name}</h1>}
