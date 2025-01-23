@@ -23,7 +23,7 @@ const SearchText = () => {
       toast.info("Processing the Text to Extract data")
       
       try {
-        
+            // const backend_url = import.meta.env.REACT_BACKEND_API;
             const response = await axios.post("http://127.0.0.1:8000/text", {
             text: texts
           },

@@ -4,7 +4,7 @@ import time
 import os
 from licensePlateDetection.pipeline.training_pipeline import TrainPipeline
 from licensePlateDetection.utils.main_utils import decodeImage, encodeImageIntoBase64
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response,send_from_directory
 from flask_cors import CORS, cross_origin
 from licensePlateDetection.constant.application import APP_HOST, APP_PORT
 from licensePlateDetection.Database.anpr_database import ANPD_DB
@@ -29,16 +29,21 @@ class ClientApp:
     def __init__(self):
         self.filename = "inputImage.jpg"
 
-@app.route("/")
-def home():
-    return render_template('index.html') 
-
 # training model 
 @app.route("/train")
 def trainRoute():
     obj = TrainPipeline()
     obj.run_pipeline()
     return "Training Successfull!!"
+
+frontend_folder = os.path.join(os.getcwd(),"..","frontend")
+dist_folder = os.path.join(frontend_folder,"dist")
+@app.route("/",defaults={"filename":""})
+@app.route("/<path:filename>")
+def index(filename):
+  if not filename:
+    filename = "index.html"
+  return send_from_directory(dist_folder,filename)
 
 # using image
 @app.route("/predict", methods=['POST', 'GET'])
@@ -294,4 +299,4 @@ def video_feed():
      
 if __name__ == "__main__":
     clApp = ClientApp()
-    app.run(host=APP_HOST, port=int(os.environ.get('PORT', 8000)))
+    app.run(host=APP_HOST, port=8000)

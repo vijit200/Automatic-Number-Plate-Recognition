@@ -50,6 +50,7 @@ function SearchCam() {
       
       // Start video feed and detection feed from the backend
       // Used eventsource instead of Axios to fetch data through live camera contunuously instead of just once
+      // const backend_url = import.meta.env.REACT_BACKEND_API;
       const eventSource = new EventSource("http://127.0.0.1:8000/video_feed");
       eventSource.onmessage = (event) => {
         try {

@@ -168,6 +168,7 @@ function Search() {
         details.classList.add("hidden");
         
         try {
+            // const backend_url = import.meta.env.REACT_BACKEND_API;
             const response = await axios.post("http://127.0.0.1:8000/predict", {
                 image: image.split(",")[1] // Send only the base64 part after the comma,
             },
