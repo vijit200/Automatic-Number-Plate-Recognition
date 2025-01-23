@@ -30,8 +30,8 @@ class ClientApp:
         self.filename = "inputImage.jpg"
 
 @app.route("/")
-def start():
-    print("live")
+def home():
+    return render_template('index.html') 
 
 # training model 
 @app.route("/train")
