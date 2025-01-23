@@ -290,4 +290,4 @@ def video_feed():
      
 if __name__ == "__main__":
     clApp = ClientApp()
-    app.run(host=APP_HOST, port=8000)
+    app.run(host=APP_HOST, port=int(os.environ.get('PORT', 8000)))
